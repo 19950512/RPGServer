@@ -1,0 +1,43 @@
+services:
+  rpgserver:
+    build:
+      context: .
+      dockerfile: RPGServer/Dockerfile
+    container_name: rpgserver
+    ports:
+      - "5000:5000"   # gRPC
+      - "5001:5001"   # HealthCheck HTTP
+    environment:
+      - ConnectionStrings__Default=Host=postgres;Database=rpgdb;Username=rpguser;Password=rpgpass
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16
+    container_name: rpg_postgres
+    environment:
+      POSTGRES_USER: rpguser
+      POSTGRES_PASSWORD: rpgpass
+      POSTGRES_DB: rpgdb
+    volumes:
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: rpg_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@rpg.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

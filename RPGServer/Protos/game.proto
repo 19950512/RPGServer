@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+option csharp_namespace = "RPG.Protos";
+
+package RPG.Protos;
+
+message PlayerData {
+  string email = 1;
+  string json_data = 2;
+}
+
+message RegisterRequest {
+  string email = 1;
+  string password = 2;
+  string json_data = 3;
+}
+
+message RegisterResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  bool success = 1;
+  string message = 2;
+  PlayerData player = 3;
+}
+
+message SaveResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+service GameService {
+  rpc Register (RegisterRequest) returns (RegisterResponse);
+  rpc Login (LoginRequest) returns (LoginResponse);
+  rpc SavePlayer (PlayerData) returns (SaveResponse);
+}
