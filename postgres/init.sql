@@ -50,6 +50,66 @@ CREATE TABLE IF NOT EXISTS player_equipment (
     equipped_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Tabela para status online dos jogadores
+CREATE TABLE IF NOT EXISTS player_online_status (
+    id SERIAL PRIMARY KEY,
+    player_id INT NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+    player_name VARCHAR(255) NOT NULL,
+    vocation VARCHAR(50) NOT NULL,
+    level INT NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'offline', -- 'online', 'in_battle', 'idle', 'offline'
+    last_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    session_start TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    x INT NOT NULL DEFAULT 0, -- posição X do jogador
+    y INT NOT NULL DEFAULT 0, -- posição Y do jogador
+    UNIQUE(player_id)
+);
+
+-- Tabela para mensagens entre jogadores
+CREATE TABLE IF NOT EXISTS player_messages (
+    id SERIAL PRIMARY KEY,
+    from_player_id INT NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+    to_player_id INT NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+    from_player_name VARCHAR(255) NOT NULL,
+    to_player_name VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    read_at TIMESTAMP NULL
+);
+
+-- Tabela para estatísticas do servidor
+CREATE TABLE IF NOT EXISTS server_stats (
+    id SERIAL PRIMARY KEY,
+    stat_name VARCHAR(100) UNIQUE NOT NULL,
+    stat_value VARCHAR(255) NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Inserir estatísticas iniciais do servidor
+INSERT INTO server_stats (stat_name, stat_value) VALUES 
+    ('server_version', '1.0.0'),
+    ('server_start_time', EXTRACT(EPOCH FROM NOW())::text),
+    ('total_battles', '0'),
+    ('total_logins', '0')
+ON CONFLICT (stat_name) DO NOTHING;
+
+-- Índices para performance
+CREATE INDEX IF NOT EXISTS idx_player_online_status_status ON player_online_status(status);
+CREATE INDEX IF NOT EXISTS idx_player_online_status_last_seen ON player_online_status(last_seen);
+CREATE INDEX IF NOT EXISTS idx_player_messages_to_player ON player_messages(to_player_id, read_at);
+CREATE INDEX IF NOT EXISTS idx_player_messages_sent_at ON player_messages(sent_at);
+
+-- Função para limpar jogadores offline antigos (mais de 5 minutos sem atividade)
+CREATE OR REPLACE FUNCTION cleanup_offline_players()
+RETURNS void AS $$
+BEGIN
+    UPDATE player_online_status 
+    SET status = 'offline'
+    WHERE status != 'offline' 
+    AND last_seen < NOW() - INTERVAL '5 minutes';
+END;
+$$ LANGUAGE plpgsql;
+
 -- Índices para melhor performance
 CREATE INDEX IF NOT EXISTS idx_players_email ON players(email);
 CREATE INDEX IF NOT EXISTS idx_player_inventory_player_id ON player_inventory(player_id);

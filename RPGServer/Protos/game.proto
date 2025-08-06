@@ -85,6 +85,84 @@ message SaveProgressResponse {
 }
 
 // ========================
+// MENSAGENS DE STATUS ONLINE E MULTIPLAYER
+// ========================
+
+message OnlinePlayer {
+  string player_name = 1;
+  string vocation_name = 2;
+  int32 level = 3;
+  string status = 4; // "online", "in_battle", "idle"
+  int64 last_seen = 5; // timestamp
+  int32 x = 6; // posição X do jogador
+  int32 y = 7; // posição Y do jogador
+  string email = 8; // email do jogador
+}
+
+message GetOnlinePlayersRequest {
+  // Não precisa de campos, busca todos
+}
+
+message GetOnlinePlayersResponse {
+  bool success = 1;
+  string message = 2;
+  repeated OnlinePlayer players = 3;
+  int32 total_online = 4;
+}
+
+message UpdatePlayerStatusRequest {
+  string email = 1;
+  string status = 2; // "online", "in_battle", "idle", "offline"
+  int32 x = 3; // posição X do jogador
+  int32 y = 4; // posição Y do jogador
+}
+
+message UpdatePlayerStatusResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message SendMessageRequest {
+  string from_email = 1;
+  string to_player_name = 2;
+  string message = 3;
+}
+
+message SendMessageResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message GetMessagesRequest {
+  string email = 1;
+}
+
+message ChatMessage {
+  string from_player = 1;
+  string message = 2;
+  int64 timestamp = 3;
+}
+
+message GetMessagesResponse {
+  bool success = 1;
+  string message = 2;
+  repeated ChatMessage messages = 3;
+}
+
+message ServerStatusRequest {
+  // Não precisa de campos
+}
+
+message ServerStatusResponse {
+  bool server_online = 1;
+  string server_version = 2;
+  int32 total_players = 3;
+  int32 players_online = 4;
+  int32 players_in_battle = 5;
+  string uptime = 6;
+}
+
+// ========================
 // SERVIÇO PRINCIPAL
 // ========================
 
@@ -99,6 +177,13 @@ service GameService {
   // Gameplay
   rpc StartBattle (StartBattleRequest) returns (StartBattleResponse);
   
-  // Persistência
+  // Progresso
   rpc SaveProgress (SaveProgressRequest) returns (SaveProgressResponse);
+  
+  // Multiplayer e Status Online
+  rpc GetOnlinePlayers (GetOnlinePlayersRequest) returns (GetOnlinePlayersResponse);
+  rpc UpdatePlayerStatus (UpdatePlayerStatusRequest) returns (UpdatePlayerStatusResponse);
+  rpc SendMessage (SendMessageRequest) returns (SendMessageResponse);
+  rpc GetMessages (GetMessagesRequest) returns (GetMessagesResponse);
+  rpc GetServerStatus (ServerStatusRequest) returns (ServerStatusResponse);
 }
