@@ -1,6 +1,7 @@
+
+
 using Dapper;
 using Npgsql;
-
 namespace RPGServer.Data;
 
 public class PlayerData
@@ -471,6 +472,24 @@ public class PlayerRepository
         {
             Console.WriteLine($"[ERROR] Erro ao contar total de jogadores: {ex.Message}");
             return 0;
+        }
+    }
+
+    // Remove o registro do player da tabela player_online_status
+    public async Task<bool> DeletePlayerOnlineStatusAsync(int playerId)
+    {
+        using var conn = GetConnection();
+        try
+        {
+            int rows = await conn.ExecuteAsync(
+                "DELETE FROM player_online_status WHERE player_id = @PlayerId",
+                new { PlayerId = playerId });
+            return rows > 0;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERROR] Erro ao remover status online do jogador: {ex.Message}");
+            return false;
         }
     }
 }

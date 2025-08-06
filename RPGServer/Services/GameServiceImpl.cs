@@ -285,18 +285,30 @@ public class GameServiceImpl : GameService.GameServiceBase
                 return new UpdatePlayerStatusResponse { Success = false, Message = "Jogador não encontrado" };
             }
 
-            // Se não vier posição, default 0
             int x = request.X;
             int y = request.Y;
-            await _repository.UpdatePlayerOnlineStatusAsync(playerData.Id, playerData.Name, playerData.Vocation, playerData.Level, request.Status, x, y);
 
-            Console.WriteLine($"[UPDATE_STATUS] {playerData.Name} -> {request.Status} (x={x}, y={y})");
-
-            return new UpdatePlayerStatusResponse
+            if (request.Status.ToLower() == "offline")
             {
-                Success = true,
-                Message = $"Status atualizado para {request.Status}"
-            };
+                // Remove o registro do player da tabela de online
+                await _repository.DeletePlayerOnlineStatusAsync(playerData.Id);
+                Console.WriteLine($"[UPDATE_STATUS] {playerData.Name} REMOVIDO da lista de online (offline)");
+                return new UpdatePlayerStatusResponse
+                {
+                    Success = true,
+                    Message = "Player removido da lista de online (offline)"
+                };
+            }
+            else
+            {
+                await _repository.UpdatePlayerOnlineStatusAsync(playerData.Id, playerData.Name, playerData.Vocation, playerData.Level, request.Status, x, y);
+                Console.WriteLine($"[UPDATE_STATUS] {playerData.Name} -> {request.Status} (x={x}, y={y})");
+                return new UpdatePlayerStatusResponse
+                {
+                    Success = true,
+                    Message = $"Status atualizado para {request.Status}"
+                };
+            }
         }
         catch (Exception ex)
         {
