@@ -54,7 +54,7 @@ public class GameServiceImpl : GameService.GameServiceBase
         catch (Exception ex)
         {
             Console.WriteLine($"[ERROR] Erro ao criar jogador: {ex.Message}");
-            return new CreatePlayerResponse { Success = false, Message = "Erro interno do servidor" };
+            return new CreatePlayerResponse { Success = false, Message = ex.Message };
         }
     }
 

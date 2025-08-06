@@ -125,10 +125,15 @@ public class PlayerRepository
 
             return rows > 0;
         }
+        catch (PostgresException ex) when (ex.SqlState == "23505")
+        {
+            Console.WriteLine($"[ERROR] Email já cadastrado: {ex.Message}");
+            throw new Exception("Já existe uma conta com este email.");
+        }
         catch (Exception ex)
         {
             Console.WriteLine($"[ERROR] Erro ao registrar jogador: {ex.Message}");
-            return false;
+            throw new Exception("Erro ao registrar jogador.");
         }
     }
 
