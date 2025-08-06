@@ -4,21 +4,9 @@ option csharp_namespace = "RPG.Protos";
 
 package RPG.Protos;
 
-message PlayerData {
-  string email = 1;
-  string json_data = 2;
-}
-
-message RegisterRequest {
-  string email = 1;
-  string password = 2;
-  string json_data = 3;
-}
-
-message RegisterResponse {
-  bool success = 1;
-  string message = 2;
-}
+// ========================
+// MENSAGENS DE AUTENTICAÇÃO
+// ========================
 
 message LoginRequest {
   string email = 1;
@@ -28,16 +16,89 @@ message LoginRequest {
 message LoginResponse {
   bool success = 1;
   string message = 2;
-  PlayerData player = 3;
 }
 
-message SaveResponse {
+message CreatePlayerRequest {
+  string email = 1;
+  string player_name = 2;
+  string vocation_name = 3;
+}
+
+message CreatePlayerResponse {
   bool success = 1;
   string message = 2;
 }
 
+// ========================
+// MENSAGENS DE STATUS DO JOGADOR
+// ========================
+
+message GetPlayerStatusRequest {
+  string email = 1;
+}
+
+message GetPlayerStatusResponse {
+  bool success = 1;
+  string message = 2;
+  string player_name = 3;
+  string vocation_name = 4;
+  int32 level = 5;
+  int32 current_hp = 6;
+  int32 max_hp = 7;
+  int32 total_attack = 8;
+  int32 total_defense = 9;
+  int32 experience = 10;
+  int32 coins = 11;
+  repeated string inventory = 12;
+}
+
+// ========================
+// MENSAGENS DE BATALHA
+// ========================
+
+message StartBattleRequest {
+  string email = 1;
+}
+
+message StartBattleResponse {
+  bool success = 1;
+  string message = 2;
+  int32 monster_count = 3;
+  string battle_result = 4;
+  bool victory = 5;
+  int32 exp_gained = 6;
+  int32 coins_gained = 7;
+  repeated string items_looted = 8;
+}
+
+// ========================
+// MENSAGENS DE PROGRESSO
+// ========================
+
+message SaveProgressRequest {
+  string email = 1;
+}
+
+message SaveProgressResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// ========================
+// SERVIÇO PRINCIPAL
+// ========================
+
 service GameService {
-  rpc Register (RegisterRequest) returns (RegisterResponse);
+  // Autenticação
   rpc Login (LoginRequest) returns (LoginResponse);
-  rpc SavePlayer (PlayerData) returns (SaveResponse);
+  rpc CreatePlayer (CreatePlayerRequest) returns (CreatePlayerResponse);
+  
+  // Status do jogador
+  rpc GetPlayerStatus (GetPlayerStatusRequest) returns (GetPlayerStatusResponse);
+  
+  // Gameplay
+  rpc StartBattle (StartBattleRequest) returns (StartBattleResponse);
+  
+  // Persistência
+  rpc SaveProgress (SaveProgressRequest) returns (SaveProgressResponse);
 }
